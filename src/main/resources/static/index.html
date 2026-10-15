@@ -120,6 +120,21 @@
       }
     }
 
+    // NAYA: Enter key support
+    const fieldIds = ['customerName', 'productName', 'quantity', 'price'];
+    fieldIds.forEach((id, i) => {
+      document.getElementById(id).addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        if (i < fieldIds.length - 1) {
+          document.getElementById(fieldIds[i + 1]).focus();
+        } else {
+          createOrder();
+          document.getElementById('customerName').focus();
+        }
+      });
+    });
+
     loadOrders();
     setInterval(loadOrders, 3000);
 </script>
