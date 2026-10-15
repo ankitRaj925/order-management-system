@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: order-service-config
+data:
+  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/omsdb
+  SPRING_DATASOURCE_USERNAME: oms
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: order-service-secret
+type: Opaque
+stringData:
+  SPRING_DATASOURCE_PASSWORD: oms123
