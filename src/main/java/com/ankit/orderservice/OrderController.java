@@ -12,15 +12,19 @@ import java.util.List;
 public class OrderController {
 
     private final OrderRepository repository;
+    private final OrderEventProducer producer;
 
-    public OrderController(OrderRepository repository) {
+    public OrderController(OrderRepository repository, OrderEventProducer producer) {
         this.repository = repository;
+        this.producer = producer;
     }
 
     @PostMapping
     public ResponseEntity<Order> create(@RequestBody Order order) {
         order.setStatus(OrderStatus.CREATED);
-        return ResponseEntity.status(HttpStatus.CREATED).body(repository.save(order));
+        Order saved = repository.save(order);
+        producer.sendOrderCreated(saved.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @GetMapping
