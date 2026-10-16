@@ -1,13 +1,15 @@
+
 services:
   postgres:
     image: postgres:16
     container_name: oms-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: oms
       POSTGRES_PASSWORD: oms123
       POSTGRES_DB: omsdb
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -19,8 +21,9 @@ services:
   kafka:
     image: apache/kafka:3.9.0
     container_name: oms-kafka
+    restart: unless-stopped
     ports:
-      - "9092:9092"
+      - "127.0.0.1:9092:9092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -36,6 +39,7 @@ services:
 
   order-service:
     build: .
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
@@ -52,22 +56,26 @@ services:
   prometheus:
     image: prom/prometheus:v2.55.0
     container_name: oms-prometheus
+    restart: unless-stopped
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     depends_on:
       - order-service
 
   grafana:
     image: grafana/grafana:11.3.0
     container_name: oms-grafana
+    restart: unless-stopped
     volumes:
       - ./monitoring/grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - grafana-data:/var/lib/grafana
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       - prometheus
 
 volumes:
   pgdata:
+  grafana-data:
