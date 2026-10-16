@@ -19,6 +19,7 @@ spec:
           image: ghcr.io/ankitraj925/order-service:latest
           ports:
             - containerPort: 8080
+            - containerPort: 8081
           envFrom:
             - configMapRef:
                 name: order-service-config
@@ -27,13 +28,13 @@ spec:
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: 8080
+              port: 8081
             initialDelaySeconds: 20
             periodSeconds: 5
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
-              port: 8080
+              port: 8081
             initialDelaySeconds: 40
             periodSeconds: 10
           resources:
