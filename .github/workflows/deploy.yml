@@ -1,0 +1,28 @@
+﻿name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, Linux, X64]
+    steps:
+      - name: Deploy latest main
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /home/ubuntu/order-management-system
+          git fetch origin main
+          git merge --ff-only origin/main
+          docker compose build order-service
+          docker compose up -d order-service
+          docker compose ps
