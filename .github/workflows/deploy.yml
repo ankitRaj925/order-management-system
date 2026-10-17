@@ -1,12 +1,15 @@
-﻿name: Deploy to EC2
+﻿
+name: Deploy to EC2
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Build and Publish OMS Image"]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
+  packages: read
 
 concurrency:
   group: production-deploy
@@ -14,15 +17,44 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: [self-hosted, Linux, X64]
+
     steps:
-      - name: Deploy latest main
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy published image
         shell: bash
+        env:
+          IMAGE_TAG: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
           cd /home/ubuntu/order-management-system
+
           git fetch origin main
-          git merge --ff-only origin/main
-          docker compose build order-service
-          docker compose up -d order-service
+          git checkout --detach "$IMAGE_TAG"
+
+          export OMS_IMAGE_TAG="$IMAGE_TAG"
+
+          trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
+
+          docker compose pull order-service
+          docker compose up -d --no-build order-service
           docker compose ps
+
+          for attempt in {1..12}; do
+            if curl --fail --silent http://localhost:8080/ >/dev/null; then
+              echo "OMS application is healthy."
+              exit 0
+            fi
+            sleep 5
+          done
+
+          echo "OMS health check failed."
+          docker compose logs --tail=100 order-service
+          exit 1

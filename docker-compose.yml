@@ -38,7 +38,7 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
   order-service:
-    build: .
+    image: ghcr.io/ankitraj925/order-management-system:${OMS_IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       postgres:
