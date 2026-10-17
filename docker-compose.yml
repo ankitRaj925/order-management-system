@@ -5,9 +5,9 @@ services:
     container_name: oms-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: oms
-      POSTGRES_PASSWORD: oms123
-      POSTGRES_DB: omsdb
+      POSTGRES_USER: ${POSTGRES_USER:-oms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-omsdb}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
@@ -47,8 +47,8 @@ services:
         condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/omsdb
-      SPRING_DATASOURCE_USERNAME: oms
-      SPRING_DATASOURCE_PASSWORD: oms123
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-oms}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     ports:
       - "8080:8080"
