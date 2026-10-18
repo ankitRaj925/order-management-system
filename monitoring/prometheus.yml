@@ -1,3 +1,4 @@
+
 global:
   scrape_interval: 5s
 
@@ -6,3 +7,7 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets: ['order-service:8081']
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ['oms-prometheus:9090']
