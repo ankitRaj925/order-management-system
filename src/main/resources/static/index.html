@@ -1,139 +1,908 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Order Management System</title>
+    <title>OMS</title>
     <style>
+        :root {
+            color-scheme: light;
+            --bg: #f3f6fb; --card: #ffffff; --text: #202b3c; --muted: #66758b;
+            --border: #dfe6f0; --th: #edf2f8; --input-bg: #ffffff; --input-border: #c7d2e2;
+            --primary: #4f46e5; --primary-hover: #4338ca; --shadow: 0 2px 8px rgba(31,45,75,.08);
+            --created-bg: #ffffff; --created-fg: #3978c6;
+            --confirmed-bg: #ffffff; --confirmed-fg: #b97816;
+            --shipped-bg: #ffffff; --shipped-fg: #32845a;
+            --badge-created-bg: #e8f1ff; --badge-created-fg: #2864ad;
+            --badge-confirmed-bg: #fff2c7; --badge-confirmed-fg: #965b00;
+            --badge-shipped-bg: #e1f6e9; --badge-shipped-fg: #237548;
+            --flash: #fff2c6;
+        }
+        [data-theme="dark"] {
+            color-scheme: dark;
+            /* Slate dashboard palette based on the user's reference screenshot. */
+            --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --muted: #94a3b8;
+            --border: #334155; --th: #243247; --input-bg: #0f172a; --input-border: #475569;
+            --primary: #3b82f6; --primary-hover: #2563eb; --shadow: 0 4px 12px rgba(0,0,0,.22);
+            --created-bg: #1e293b; --created-fg: #7fb0ff;
+            --confirmed-bg: #1e293b; --confirmed-fg: #ffc66d;
+            --shipped-bg: #1e293b; --shipped-fg: #7edba3;
+            --badge-created-bg: #203b60; --badge-created-fg: #a9ccff;
+            --badge-confirmed-bg: #493719; --badge-confirmed-fg: #ffd27a;
+            --badge-shipped-bg: #183d30; --badge-shipped-fg: #91e3b3;
+            --flash: #334155;
+        }
         * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 24px; color: #222; }
-        .container { max-width: 900px; margin: auto; }
-        h1 { margin-top: 0; }
-        .card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        [hidden] { display: none !important; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: background 0.2s, color 0.2s; }
+
+        .navbar { position: sticky; top: 0; z-index: 20; background: var(--card); border-bottom: 1px solid var(--border); box-shadow: var(--shadow); }
+        .navbar-inner { width: 100%; max-width: 1120px; margin: 0 auto; padding: 13px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .brand { margin: 0; display:flex; align-items:center; gap:12px; font-size: 23px; font-weight: 700; letter-spacing:-.025em; text-transform:uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .brand-mark { display:none; }
+        .brand-name { overflow:hidden; text-overflow:ellipsis; }
+        .nav-actions { display: flex; align-items:center; gap: 8px; flex: 0 0 auto; }
+        .container { width: 100%; max-width: 1120px; margin: 0 auto; padding: 20px 24px 80px; }
+
+        h3 { margin-top: 0; }
+        .card { background: var(--card); border:1px solid color-mix(in srgb, var(--border) 75%, transparent); border-radius: 12px; padding: 18px; margin-bottom: 16px; box-shadow: 0 5px 18px rgba(15,23,42,.055), 0 1px 3px rgba(15,23,42,.045); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+        .card:hover { box-shadow: 0 8px 24px rgba(15,23,42,.085), 0 2px 5px rgba(15,23,42,.05); border-color:color-mix(in srgb, var(--primary) 18%, var(--border)); }
+        [data-theme="dark"] .card { box-shadow:0 4px 16px rgba(0,0,0,.24), 0 1px 2px rgba(0,0,0,.18); }
+        [data-theme="dark"] .card:hover { box-shadow:0 7px 22px rgba(0,0,0,.34); }
         .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        input { flex: 1; min-width: 140px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
-        button { padding: 10px 18px; border: none; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; }
-        button:hover { background: #1d4ed8; }
+        input, select { flex: 1; min-width: 140px; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text); font-size: 14px; }
+        button { padding: 10px 18px; border: none; border-radius: 8px; background: var(--primary); color: #fff; cursor: pointer; font-size: 14px; font-weight:600; box-shadow:0 2px 5px color-mix(in srgb, var(--primary) 22%, transparent); transition:transform .16s ease, background .16s ease, box-shadow .16s ease; }
+        button:hover { background: var(--primary-hover); transform:translateY(-1px); box-shadow:0 5px 12px color-mix(in srgb, var(--primary) 30%, transparent); }
+        button:active { transform:translateY(0) scale(.98); }
         button.secondary { background: #64748b; }
+        button.icon-btn { display: flex; align-items: center; justify-content: center; padding: 0; border-radius: 50%; width: 48px; height: 48px; flex: 0 0 auto; background: var(--card); color: var(--text); border: 1px solid var(--border); box-shadow:0 3px 10px rgba(20,35,60,.10); }
+        button.icon-btn:hover { background: var(--th); }
+        button.icon-btn svg { display:block; width:22px; height:22px; }
+        .icon-swap { display:flex; align-items:center; justify-content:center; width:100%; height:100%; animation: iconDrop .24s ease both; }
+        @keyframes iconDrop { from { opacity:0; transform:translateY(-5px) scale(.94); } to { opacity:1; transform:translateY(0) scale(1); } }
+        .profile-action-dialog { width:min(340px,92vw); }
+        .profile-action-dialog .dialog-actions { margin-top:18px; }
+        .password-wrap { position:relative; width:100%; margin-top:8px; }
+        .password-wrap input { width:100%; padding-right:46px; margin-top:0 !important; }
+        .password-toggle { position:absolute; top:50%; right:7px; transform:translateY(-50%); display:flex; align-items:center; justify-content:center; padding:7px; width:34px; height:34px; color:var(--muted); background:transparent; box-shadow:none; }
+        .password-toggle:hover { background:var(--th); color:var(--text); box-shadow:none; transform:translateY(-50%); }
+        .password-toggle svg { width:19px; height:19px; }
+        button.row-btn { padding: 4px 10px; font-size: 12px; margin-right: 6px; }
+        button.row-btn.danger { background: #dc2626; }
+        button.row-btn.danger:hover { background: #b91c1c; }
+        :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        input:focus-visible, select:focus-visible { outline-offset: 0; border-color: var(--primary); }
+
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+        .stat { background: var(--card); border:1px solid color-mix(in srgb, var(--border) 88%, transparent); border-radius: 12px; padding: 14px 16px; box-shadow:0 3px 12px rgba(25,42,70,.06); min-width: 0; transition:transform .18s ease, box-shadow .18s ease; }
+        .stat:hover { transform:translateY(-2px); box-shadow:0 7px 18px rgba(25,42,70,.10); }
+        .stat.wide { grid-column:auto; }
+        .stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.055em; font-weight:600; }
+        /* Status cards keep the same clean card surface; status colours are accents, not full-card fills. */
+        .stat.status-created { background: var(--created-bg); border: 1px solid var(--border); border-left: 5px solid var(--created-fg); }
+        .stat.status-confirmed { background: var(--confirmed-bg); border: 1px solid var(--border); border-left: 5px solid var(--confirmed-fg); }
+        .stat.status-shipped { background: var(--shipped-bg); border: 1px solid var(--border); border-left: 5px solid var(--shipped-fg); }
+        .stat.status-created .label, .stat.status-created .value { color: var(--created-fg); }
+        .stat.status-confirmed .label, .stat.status-confirmed .value { color: var(--confirmed-fg); }
+        .stat.status-shipped .label, .stat.status-shipped .value { color: var(--shipped-fg); }
+        .stat .value { font-size: 25px; font-weight: 700; margin-top: 5px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+        .stat.wide .value { font-size: 24px; }
+        .stat.revenue-stat { grid-column: 1 / -1; }
+        .chart-card { display:block; }
+        .chart-card h3 { margin-bottom:16px; }
+        .chart-content { display:block; width:100%; }
+        .progress-track { display:flex; width:100%; height:18px; overflow:hidden; border-radius:999px; background:var(--th); box-shadow:inset 0 1px 3px rgba(15,23,42,.12); }
+        .progress-segment { height:100%; width:0; transition:width .45s ease; }
+        .progress-segment.created { background:#3b82f6; }
+        .progress-segment.confirmed { background:#f59e0b; }
+        .progress-segment.shipped { background:#22c55e; }
+        .fulfilment-card { padding:18px 20px; }
+        .fulfilment-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+        .fulfilment-heading h3 { margin:0; font-size:18px; font-weight:600; }
+        .fulfilment-count { color:var(--text); font-size:14px; font-weight:500; }
+        .fulfilment-track { width:100%; height:12px; overflow:hidden; border-radius:999px; background:var(--th); border:1px solid var(--border); }
+        .fulfilment-fill { height:100%; width:0; border-radius:999px; background:#238653; transition:width .5s ease; }
+        .fulfilment-foot { display:flex; justify-content:flex-end; margin-top:9px; color:var(--muted); font-size:13px; }
+        [data-theme="dark"] .fulfilment-track { background:#243247; border-color:#334155; }
+        [data-theme="dark"] .fulfilment-fill { background:#22c55e; }
+        @media (max-width:520px) { .fulfilment-heading { align-items:flex-start; flex-direction:column; gap:5px; } .fulfilment-foot { justify-content:flex-start; } }
+
+        .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+        .filters #search { flex: 2 1 220px; }
+        .filters #statusFilter { flex: 1 1 150px; }
+        .filters button { flex: 0 0 auto; }
+        .bulk-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin: 0 0 12px; }
+        .bulk-actions .hint { color:var(--muted); font-size:13px; margin-right:auto; }
+        .select-cell { width:38px; text-align:center; }
+        input[type="checkbox"] { min-width:0; width:16px; height:16px; accent-color:var(--primary); cursor:pointer; }
+        button:disabled { opacity:.55; cursor:not-allowed; }
+        .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e5e7eb; }
-        th { background: #f1f5f9; }
-        .badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; background: #dbeafe; color: #1e40af; }
-        .badge.CONFIRMED { background: #fef3c7; color: #92400e; }
-        .badge.SHIPPED { background: #dcfce7; color: #166534; }
-        .msg { margin-top: 10px; font-size: 14px; }
-        .error { color: #b91c1c; }
-        .ok { color: #166534; }
+        th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        th { background: var(--th); }
+        .badge { display:inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; background: var(--badge-created-bg); color: var(--badge-created-fg); }
+        .badge.CONFIRMED { background: var(--badge-confirmed-bg); color: var(--badge-confirmed-fg); }
+        .badge.SHIPPED { background: var(--badge-shipped-bg); color: var(--badge-shipped-fg); }
+        .empty { text-align: center; color: var(--muted); padding: 24px; }
+        .flash td { animation: flash 2.5s ease-out; }
+        @keyframes flash { from { background: var(--flash); } to { background: transparent; } }
+        #toasts { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 30; }
+        .toast { padding: 10px 16px; border-radius: 6px; color: #fff; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .toast.ok { background: #16a34a; }
+        .toast.error { background: #dc2626; }
+
+        dialog { border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); padding: 20px; width: min(360px, 92vw); }
+        dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+        dialog h3 { margin: 0 0 6px; }
+        dialog p { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+        dialog input { width: 100%; }
+        .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+        button.danger-action { background:#dc2626; }
+        button.danger-action:hover { background:#b91c1c; }
+        #adminMsg { color: #dc2626; font-size: 13px; min-height: 18px; margin-top: 8px; }
+
+        @media (max-width: 760px) {
+            .navbar-inner { padding: 10px 16px; }
+            .container { padding: 16px 16px 84px; }
+            .brand { font-size: 18px; gap:9px; }
+            .stats { grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; }
+            .stat.wide { grid-column:1 / -1; }
+            .stat.revenue-stat { grid-column:1 / -1; }
+            .stat.wide .value { font-size: 24px; }
+            .chart-card { display:block; }
+            .chart-card h3 { margin-bottom:14px; }
+            .legend-col { grid-template-columns:1fr; gap:8px; }
+            .legend-item { padding:8px 10px; }
+        }
+        @media (max-width: 420px) {
+            .brand-name { max-width:190px; }
+            .stats .stat:not(.revenue-stat) { padding:12px; }
+            .stat .value { font-size:22px; }
+            .chart-content { gap:12px; }
+            .legend-col { font-size:13px; }
+            .brand { font-size:16px; letter-spacing:-.04em; }
+        }
+        /* Small screens: Clear selection takes the place of the count, Ship and Delete stay on one line */
+        @media (max-width: 760px) {
+            .bulk-actions { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "clear ship delete" "count count count"; gap: 8px; align-items: center; }
+            .bulk-actions .hint { grid-area: count; margin: 0; }
+            .bulk-actions #clearSelBtn { grid-area: clear; }
+            .bulk-actions #bulkShipBtn { grid-area: ship; }
+            .bulk-actions #bulkDeleteBtn { grid-area: delete; }
+            .bulk-actions button { padding: 8px 10px; font-size: 13px; }
+        }
+        /* Very narrow screens: controls stack, Refresh sits on the right like the Create button */
+        @media (max-width: 460px) {
+            .filters { display: grid; grid-template-columns: 1fr; }
+            .filters #search, .filters #statusFilter { width: 100%; min-width: 0; }
+            .filters #refreshBtn { justify-self: end; }
+            .bulk-actions { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "ship delete" "clear count"; }
+            .bulk-actions .hint { justify-self: end; }
+        }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>Order Management System</h1>
+<header class="navbar">
+    <div class="navbar-inner">
+        <h1 class="brand"><span class="brand-name">ORDER MANAGEMENT SYSTEM</span></h1>
+        <div class="nav-actions">
+            <button id="profileBtn" class="icon-btn" onclick="onProfileClick()" aria-label="Admin login" title="Admin login"></button>
+            <button id="themeBtn" class="icon-btn" onclick="toggleTheme()" aria-label="Toggle light and dark mode" title="Toggle light and dark mode"></button>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <div class="stats">
+        <div class="stat"><div class="label">Total orders</div><div class="value" id="statTotal">0</div></div>
+        <div class="stat status-created"><div class="label">Created</div><div class="value" id="statCreated">0</div></div>
+        <div class="stat status-confirmed"><div class="label">Confirmed</div><div class="value" id="statConfirmed">0</div></div>
+        <div class="stat status-shipped"><div class="label">Shipped</div><div class="value" id="statShipped">0</div></div>
+        <div class="stat wide revenue-stat"><div class="label">Total value (all orders)</div><div class="value" id="statRevenue">₹0.00</div></div>
+    </div>
+
+    <div class="card chart-card fulfilment-card">
+        <div class="fulfilment-heading">
+            <h3>Order Fulfilment</h3>
+            <span id="fulfilmentCount" class="fulfilment-count">0 of 0 shipped</span>
+        </div>
+        <div class="fulfilment-track" role="progressbar" aria-label="Orders shipped" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="fulfilmentProgress">
+            <div id="fulfilmentFill" class="fulfilment-fill"></div>
+        </div>
+        <div class="fulfilment-foot">
+            <span id="fulfilmentPercent">0% of all orders shipped</span>
+        </div>
+    </div>
 
     <div class="card">
         <h3>Create Order</h3>
         <div class="form-row">
-            <input id="customerName" placeholder="Customer name">
-            <input id="productName" placeholder="Product">
-            <input id="quantity" type="number" min="1" placeholder="Quantity">
-            <input id="price" type="number" min="0" step="0.01" placeholder="Price">
-            <button onclick="createOrder()">Create</button>
+            <input id="customerName" type="text" placeholder="Customer name" maxlength="50" autocomplete="off">
+            <input id="productName" type="text" placeholder="Product" maxlength="100" autocomplete="off">
+            <input id="quantity" type="text" inputmode="numeric" placeholder="Quantity" maxlength="4" autocomplete="off">
+            <input id="price" type="text" inputmode="decimal" placeholder="Price" maxlength="10" autocomplete="off">
+            <button id="createBtn" onclick="createOrder()">Create</button>
         </div>
-        <div id="message" class="msg"></div>
     </div>
 
     <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>Orders</h3>
-            <button class="secondary" onclick="loadOrders()">Refresh</button>
+        <h3>Orders</h3>
+        <div class="filters">
+            <input id="search" type="text" placeholder="Search by ID, customer or product" autocomplete="off" oninput="renderTable()">
+            <select id="statusFilter" onchange="renderTable()" aria-label="Filter by status">
+                <option value="ALL">All statuses</option>
+                <option value="CREATED">Created</option>
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="SHIPPED">Shipped</option>
+            </select>
+            <button id="refreshBtn" class="secondary" onclick="loadOrders()">Refresh</button>
         </div>
-        <table>
-            <thead>
-            <tr><th>ID</th><th>Customer</th><th>Product</th><th>Qty</th><th>Price</th><th>Status</th><th>Created</th></tr>
-            </thead>
-            <tbody id="ordersBody"></tbody>
-        </table>
+        <div id="bulkActions" class="bulk-actions" hidden>
+            <label class="hint" id="selectionCount">0 selected</label>
+            <button id="bulkShipBtn" onclick="bulkShip()">Ship Selected</button>
+            <button id="bulkDeleteBtn" class="danger-action" onclick="bulkDelete()">Delete Selected</button>
+            <button id="clearSelBtn" class="secondary" onclick="clearSelection()">Clear selection</button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr><th id="selectAllTh" class="select-cell" hidden><input id="selectAll" type="checkbox" aria-label="Select all visible orders" onchange="toggleSelectAll(this.checked)"></th><th>ID</th><th>Customer</th><th>Product</th><th>Qty</th><th>Price</th><th>Status</th><th>Created</th><th id="actionsTh" hidden>Actions</th></tr>
+                </thead>
+                <tbody id="ordersBody"></tbody>
+            </table>
+        </div>
     </div>
-</div>
+</main>
+<div id="toasts"></div>
+
+<dialog id="adminDialog">
+    <h3>Admin login</h3>
+    <p>Sign in to ship or delete orders. Your login expires after inactivity.</p>
+    <form id="adminLoginForm" onsubmit="event.preventDefault(); submitAdminLogin();">
+        <input id="adminUsernameInput" type="text" placeholder="Username" autocomplete="username" required>
+        <div class="password-wrap">
+            <input id="adminPasswordInput" type="password" placeholder="Password" autocomplete="current-password" required>
+            <button type="button" id="togglePasswordBtn" class="password-toggle" onclick="togglePasswordVisibility()" aria-label="Show password" title="Show password"></button>
+        </div>
+        <div id="adminMsg" role="alert" aria-live="polite"></div>
+        <div class="dialog-actions">
+            <button type="button" class="secondary" onclick="closeAdminDialog()">Cancel</button>
+            <button id="adminLoginBtn" type="submit">Log in</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="profileActionDialog" class="profile-action-dialog">
+    <h3 id="profileActionTitle">Admin account</h3>
+    <p id="profileActionText">Choose what you want to do.</p>
+    <div class="dialog-actions">
+        <button type="button" class="secondary" onclick="closeProfileActionDialog()">Cancel</button>
+        <button type="button" id="profileActionConfirm" onclick="confirmProfileAction()">Continue</button>
+    </div>
+</dialog>
 
 <script>
-    function showMessage(text, isError) {
-      const el = document.getElementById('message');
-      el.textContent = text;
-      el.className = 'msg ' + (isError ? 'error' : 'ok');
+    const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    const SUN = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+    const PROFILE = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>';
+    const PROFILE_ON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="m16 4 2 2 4-4"/></svg>';
+    const EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a15.7 15.7 0 0 1-3.1 3.9"/><path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/></svg>';
+    let passwordVisible = false;
+    let pendingProfileAction = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    let allOrders = [];
+    let prevStatus = null;
+    let flashIds = new Set();
+    let loadFailed = false;
+    let lastSig = null;
+    let busy = false;
+    let adminLoggedIn = false;
+    let csrfToken = null;
+    let adminUsername = null;
+    let selectedIds = new Set();
+
+    const money = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    function showToast(text, isError) {
+      const t = document.createElement('div');
+      t.className = 'toast ' + (isError ? 'error' : 'ok');
+      t.textContent = text;
+      $('toasts').appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+
+    /* ---------- Theme ---------- */
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      $('themeBtn').innerHTML = '<span class="icon-swap">' + (theme === 'dark' ? SUN : MOON) + '</span>';
+      $('themeBtn').title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+      try { localStorage.setItem('theme', theme); } catch (e) { /* storage may be blocked */ }
+    }
+
+    function toggleTheme() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+
+    /* ---------- Session-based admin mode ---------- */
+
+    function updateAdminUi() {
+      const b = $('profileBtn');
+      b.innerHTML = '<span class="icon-swap">' + (adminLoggedIn ? PROFILE_ON : PROFILE) + '</span>';
+      b.title = adminLoggedIn ? 'Signed in as ' + (adminUsername || 'admin') + ' — click to log out' : 'Admin login';
+      b.setAttribute('aria-label', b.title);
+      $('actionsTh').hidden = !adminLoggedIn;
+      $('selectAllTh').hidden = !adminLoggedIn;
+      $('bulkActions').hidden = !adminLoggedIn;
+      if (!adminLoggedIn) { selectedIds.clear(); $('selectAll').checked = false; }
+    }
+
+    function setAdminSession(active, token, username) {
+      adminLoggedIn = active;
+      csrfToken = active ? token : null;
+      adminUsername = active ? username : null;
+      updateAdminUi();
+      lastSig = null;
+      renderTable();
+    }
+
+    function onProfileClick() {
+      pendingProfileAction = adminLoggedIn ? 'logout' : 'login';
+      $('profileActionTitle').textContent = adminLoggedIn ? 'Log out of OMS?' : 'Admin login';
+      $('profileActionText').textContent = adminLoggedIn
+        ? 'Would you like to log out of your admin session?'
+        : 'Would you like to sign in to manage orders?';
+      $('profileActionConfirm').textContent = adminLoggedIn ? 'Log out' : 'Log in';
+      $('profileActionConfirm').className = adminLoggedIn ? 'danger-action' : '';
+      $('profileActionDialog').showModal();
+    }
+
+    function closeProfileActionDialog() { $('profileActionDialog').close(); pendingProfileAction = null; }
+
+    function confirmProfileAction() {
+      const action = pendingProfileAction;
+      closeProfileActionDialog();
+      if (action === 'logout') logoutAdmin();
+      else if (action === 'login') {
+        $('adminUsernameInput').value = '';
+        $('adminPasswordInput').value = '';
+        $('adminMsg').textContent = '';
+        passwordVisible = false;
+        $('adminPasswordInput').type = 'password';
+        $('togglePasswordBtn').innerHTML = EYE;
+        $('togglePasswordBtn').setAttribute('aria-label', 'Show password');
+        $('togglePasswordBtn').title = 'Show password';
+        $('adminDialog').showModal();
+        $('adminUsernameInput').focus();
+      }
+    }
+
+    function togglePasswordVisibility() {
+      passwordVisible = !passwordVisible;
+      $('adminPasswordInput').type = passwordVisible ? 'text' : 'password';
+      $('togglePasswordBtn').innerHTML = passwordVisible ? EYE_OFF : EYE;
+      $('togglePasswordBtn').setAttribute('aria-label', passwordVisible ? 'Hide password' : 'Show password');
+      $('togglePasswordBtn').title = passwordVisible ? 'Hide password' : 'Show password';
+    }
+
+    function closeAdminDialog() { $('adminDialog').close(); }
+
+    async function submitAdminLogin() {
+      const username = $('adminUsernameInput').value.trim();
+      const password = $('adminPasswordInput').value;
+      if (!username || !password) { $('adminMsg').textContent = 'Enter username and password'; return; }
+      $('adminLoginBtn').disabled = true;
+      try {
+        const res = await fetch('/orders/admin/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAdminSession(true, data.csrfToken, data.username);
+          closeAdminDialog();
+          showToast('Logged in as ' + data.username, false);
+        } else {
+          $('adminMsg').textContent = await readError(res, res.status === 429 ? 'Too many attempts. Try later.' : 'Invalid username or password');
+        }
+      } catch (e) { $('adminMsg').textContent = 'Could not connect to the server'; }
+      finally { $('adminLoginBtn').disabled = false; }
+    }
+
+    async function restoreAdminSession() {
+      try {
+        const res = await fetch('/orders/admin/session');
+        if (res.ok) {
+          const data = await res.json();
+          setAdminSession(true, data.csrfToken, data.username);
+        } else setAdminSession(false, null, null);
+      } catch (e) { setAdminSession(false, null, null); }
+    }
+
+    async function logoutAdmin() {
+      try {
+        const res = await fetch('/orders/admin/logout', { method: 'POST', headers: { 'X-CSRF-Token': csrfToken || '' } });
+        if (!res.ok && res.status !== 401) { showToast(await readError(res, 'Could not log out'), true); return; }
+      } catch (e) { showToast('Could not contact server to log out', true); return; }
+      setAdminSession(false, null, null);
+      showToast('Logged out', false);
+    }
+
+    async function readError(res, fallback) {
+      try { const data = await res.json(); if (data.errors && data.errors.length) return data.errors.join(', '); }
+      catch (e) { /* use fallback */ }
+      return fallback;
+    }
+
+    function adminHeaders() { return { 'X-CSRF-Token': csrfToken || '' }; }
+
+    async function handleAdminResult(res, okMessage, failMessage) {
+      if (res.ok) {
+        showToast(okMessage, false);
+        await loadOrders();
+        return true;
+      }
+      if (res.status === 401) {
+        setAdminSession(false, null, null);
+        showToast('Admin session expired. Please log in again.', true);
+        return false;
+      }
+      showToast(await readError(res, failMessage), true);
+      if (res.status === 404 || res.status === 409) await loadOrders();
+      return false;
+    }
+
+    async function shipOrder(id) {
+      if (busy || !adminLoggedIn) return;
+      busy = true;
+      try {
+        const res = await fetch('/orders/' + id + '/ship', { method: 'PUT', headers: adminHeaders() });
+        await handleAdminResult(res, 'Order #' + id + ' shipped', 'Could not ship the order');
+      } catch (e) { showToast('Could not ship the order', true); }
+      finally { busy = false; }
+    }
+
+    async function deleteOrder(id) {
+      if (busy || !adminLoggedIn) return;
+      if (!confirm('Delete order #' + id + '? This cannot be undone.')) return;
+      busy = true;
+      try {
+        const res = await fetch('/orders/' + id, { method: 'DELETE', headers: adminHeaders() });
+        await handleAdminResult(res, 'Order #' + id + ' deleted', 'Could not delete the order');
+      } catch (e) { showToast('Could not delete the order', true); }
+      finally { busy = false; }
+    }
+
+    function visibleRows() {
+      const query = $('search').value.trim().toLowerCase();
+      const status = $('statusFilter').value;
+      return allOrders.filter(o => (status === 'ALL' || o.status === status) && (!query ||
+        String(o.id).includes(query) || String(o.customerName).toLowerCase().includes(query) ||
+        String(o.productName).toLowerCase().includes(query)));
+    }
+
+    function toggleSelected(id, checked) {
+      if (checked) selectedIds.add(Number(id)); else selectedIds.delete(Number(id));
+      updateSelectionUi();
+    }
+
+    function toggleSelectAll(checked) {
+      visibleRows().forEach(o => checked ? selectedIds.add(o.id) : selectedIds.delete(o.id));
+      renderTable();
+      updateSelectionUi();
+    }
+
+    function clearSelection() { selectedIds.clear(); renderTable(); updateSelectionUi(); }
+
+    function updateSelectionUi() {
+      const visible = visibleRows();
+      const count = visible.filter(o => selectedIds.has(o.id)).length;
+      $('selectionCount').textContent = selectedIds.size + ' selected';
+      $('selectAll').checked = visible.length > 0 && count === visible.length;
+      $('selectAll').indeterminate = count > 0 && count < visible.length;
+      $('bulkShipBtn').disabled = busy || !selectedIds.size || !allOrders.some(o => selectedIds.has(o.id) && o.status === 'CONFIRMED');
+      $('bulkDeleteBtn').disabled = busy || !selectedIds.size;
+    }
+
+    async function runBulk(kind) {
+      if (busy || !adminLoggedIn || selectedIds.size === 0) return;
+      const ids = Array.from(selectedIds);
+      if (kind === 'delete' && !confirm('Delete ' + ids.length + ' selected order(s)? This cannot be undone.')) return;
+      busy = true;
+      $('bulkShipBtn').disabled = $('bulkDeleteBtn').disabled = true;
+      try {
+        const res = await fetch('/orders/admin/' + (kind === 'ship' ? 'ship-bulk' : 'delete-bulk'), {
+          method: 'POST', headers: { 'Content-Type': 'application/json', ...adminHeaders() }, body: JSON.stringify({ ids })
+        });
+        if (res.status === 401) { setAdminSession(false, null, null); showToast('Admin session expired. Please log in again.', true); return; }
+        if (!res.ok) { showToast(await readError(res, 'Bulk operation failed'), true); return; }
+        const result = await res.json();
+        const failed = result.results.filter(r => !r.success);
+        selectedIds.clear();
+        await loadOrders();
+        showToast(kind === 'ship' ? result.succeeded + ' shipped, ' + result.failed + ' skipped/failed' : result.succeeded + ' deleted, ' + result.failed + ' failed', result.failed > 0);
+        if (failed.length) {
+          const details = failed.slice(0, 3).map(r => '#' + r.id + ': ' + r.message).join(' | ');
+          showToast('Failed/skipped: ' + details + (failed.length > 3 ? ' | +' + (failed.length - 3) + ' more (see results in server response)' : ''), true);
+        }
+      } catch (e) { showToast('Bulk operation failed', true); }
+      finally { busy = false; updateSelectionUi(); }
+    }
+
+    function bulkShip() { runBulk('ship'); }
+    function bulkDelete() { runBulk('delete'); }
+
+    /* ---------- Data ---------- */
+
+    function timeAgo(iso) {
+      const t = new Date(iso).getTime();
+      if (isNaN(t)) return '';
+      const s = Math.floor((Date.now() - t) / 1000);
+      if (s < 60) return 'just now';
+      const m = Math.floor(s / 60);
+      if (m < 60) return m + ' min ago';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + ' hr ago';
+      const d = Math.floor(h / 24);
+      return d + (d > 1 ? ' days ago' : ' day ago');
     }
 
     async function loadOrders() {
       try {
         const res = await fetch('/orders');
+        if (!res.ok) throw new Error('bad response');
         const orders = await res.json();
-        const body = document.getElementById('ordersBody');
-        body.innerHTML = '';
-        orders.sort((a, b) => b.id - a.id).forEach(o => {
-          const tr = document.createElement('tr');
-          const cells = [o.id, o.customerName, o.productName, o.quantity, o.price];
-          cells.forEach(v => {
-            const td = document.createElement('td');
-            td.textContent = v;
-            tr.appendChild(td);
+        const current = {};
+        orders.forEach(o => { current[o.id] = o.status; });
+        if (prevStatus !== null) {
+          orders.forEach(o => {
+            if (!(o.id in prevStatus) || prevStatus[o.id] !== o.status) flashIds.add(o.id);
           });
-          const statusTd = document.createElement('td');
-          const badge = document.createElement('span');
-          badge.className = 'badge ' + o.status;
-          badge.textContent = o.status;
-          statusTd.appendChild(badge);
-          tr.appendChild(statusTd);
-          const timeTd = document.createElement('td');
-          timeTd.textContent = new Date(o.createdAt).toLocaleString();
-          tr.appendChild(timeTd);
-          body.appendChild(tr);
-        });
+        }
+        prevStatus = current;
+        allOrders = orders.sort((a, b) => b.id - a.id);
+        loadFailed = false;
+        renderSummary();
+        renderTable();
+        flashIds.clear();
       } catch (e) {
-        showMessage('Could not load orders', true);
+        if (!loadFailed) showToast('Could not load orders', true);
+        loadFailed = true;
       }
     }
 
-    async function createOrder() {
-      const order = {
-        customerName: document.getElementById('customerName').value.trim(),
-        productName: document.getElementById('productName').value.trim(),
-        quantity: parseInt(document.getElementById('quantity').value),
-        price: parseFloat(document.getElementById('price').value)
-      };
-      if (!order.customerName || !order.productName || !order.quantity || !order.price) {
-        showMessage('Please fill all fields', true);
+    function renderProgress(count, total) {
+      const shipped = count.SHIPPED || 0;
+      const percent = total > 0 ? (shipped * 100 / total) : 0;
+      $('fulfilmentFill').style.width = percent + '%';
+      $('fulfilmentCount').textContent = `${shipped} of ${total} shipped`;
+      $('fulfilmentPercent').textContent = `${percent.toFixed(1).replace(/\.0$/, '')}% of all orders shipped`;
+      $('fulfilmentProgress').setAttribute('aria-valuenow', String(Math.round(percent)));
+      $('fulfilmentProgress').setAttribute('aria-valuetext', `${shipped} of ${total} orders shipped (${percent.toFixed(1)} percent)`);
+    }
+
+    function renderSummary() {
+      const count = { CREATED: 0, CONFIRMED: 0, SHIPPED: 0 };
+      let revenue = 0;
+      allOrders.forEach(o => {
+        if (o.status in count) count[o.status]++;
+        revenue += Math.round(Number(o.price) * 100) * Number(o.quantity);
+      });
+      const total = allOrders.length;
+      $('statTotal').textContent = total;
+      $('statCreated').textContent = count.CREATED;
+      $('statConfirmed').textContent = count.CONFIRMED;
+      $('statShipped').textContent = count.SHIPPED;
+      $('statRevenue').textContent = money.format(revenue / 100);
+      $('statRevenue').title = money.format(revenue / 100);
+
+      renderProgress(count, total);
+    }
+
+    function makeRowButton(label, kind, id, handler) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'row-btn' + (kind === 'delete' ? ' danger' : '');
+      b.textContent = label;
+      b.dataset.kind = kind;
+      b.dataset.id = String(id);
+      b.setAttribute('aria-label', label + ' order #' + id);
+      b.addEventListener('click', handler);
+      return b;
+    }
+
+    function restoreFocus(body, info) {
+      let target = body.querySelector('[data-id="' + info.id + '"][data-kind="' + info.kind + '"]')
+        || body.querySelector('[data-id="' + info.id + '"]');
+      if (!target) {
+        const trs = body.querySelectorAll('tr');
+        if (trs.length) target = trs[Math.min(info.index, trs.length - 1)].querySelector('button');
+      }
+      (target || $('refreshBtn')).focus();
+    }
+
+    function renderTable() {
+      const query = $('search').value.trim().toLowerCase();
+      const status = $('statusFilter').value;
+      const rows = visibleRows();
+
+      /* Skip the redraw when nothing visible changed, so polling never steals focus */
+      const sig = JSON.stringify([!!adminLoggedIn, query, status, allOrders.length, Array.from(selectedIds).sort(),
+        rows.map(o => [o.id, o.status, o.customerName, o.productName, o.quantity, o.price, timeAgo(o.createdAt)])]);
+      if (sig === lastSig) return;
+      lastSig = sig;
+
+      const body = $('ordersBody');
+      const active = document.activeElement;
+      let focusInfo = null;
+      if (active && body.contains(active)) {
+        focusInfo = {
+          id: active.dataset.id,
+          kind: active.dataset.kind,
+          index: Array.from(body.children).indexOf(active.closest('tr'))
+        };
+      }
+
+      body.innerHTML = '';
+      if (rows.length === 0) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = adminLoggedIn ? 9 : 7;
+        td.className = 'empty';
+        td.textContent = allOrders.length === 0 ? 'No orders yet' : 'No orders match your search';
+        tr.appendChild(td);
+        body.appendChild(tr);
+        if (focusInfo) $('refreshBtn').focus();
         return;
       }
+      rows.forEach(o => {
+        const tr = document.createElement('tr');
+        if (flashIds.has(o.id)) tr.className = 'flash';
+        if (adminLoggedIn) {
+          const selectTd = document.createElement('td');
+          selectTd.className = 'select-cell';
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox'; checkbox.checked = selectedIds.has(o.id); checkbox.dataset.id = String(o.id); checkbox.dataset.kind = 'select';
+          checkbox.setAttribute('aria-label', 'Select order #' + o.id);
+          checkbox.addEventListener('change', () => toggleSelected(o.id, checkbox.checked));
+          selectTd.appendChild(checkbox); tr.appendChild(selectTd);
+        }
+        [o.id, o.customerName, o.productName, o.quantity, money.format(Number(o.price))].forEach(v => {
+          const td = document.createElement('td');
+          td.textContent = v;
+          tr.appendChild(td);
+        });
+        const statusTd = document.createElement('td');
+        const badge = document.createElement('span');
+        badge.className = 'badge ' + o.status;
+        badge.textContent = o.status;
+        statusTd.appendChild(badge);
+        tr.appendChild(statusTd);
+        const timeTd = document.createElement('td');
+        timeTd.textContent = timeAgo(o.createdAt);
+        timeTd.title = new Date(o.createdAt).toLocaleString();
+        tr.appendChild(timeTd);
+        if (adminLoggedIn) {
+          const actionTd = document.createElement('td');
+          if (o.status === 'CONFIRMED') {
+            actionTd.appendChild(makeRowButton('Ship', 'ship', o.id, () => shipOrder(o.id)));
+          }
+          actionTd.appendChild(makeRowButton('Delete', 'delete', o.id, () => deleteOrder(o.id)));
+          tr.appendChild(actionTd);
+        }
+        body.appendChild(tr);
+      });
+      if (focusInfo) restoreFocus(body, focusInfo);
+      updateSelectionUi();
+    }
+
+    /* ---------- Create order ---------- */
+
+    function validateForm(name, product, qtyStr, priceStr) {
+      if (!name) return 'Customer name is required';
+      if (name.length > 50) return 'Customer name can be at most 50 characters';
+      if (!product) return 'Product name is required';
+      if (product.length > 100) return 'Product name can be at most 100 characters';
+      if (!/^\d+$/.test(qtyStr)) return 'Quantity must be a whole number';
+      const qty = parseInt(qtyStr, 10);
+      if (qty < 1 || qty > 1000) return 'Quantity must be between 1 and 1000';
+      if (!priceStr) return 'Price is required';
+      if (!/^\d{1,7}(\.\d{1,2})?$/.test(priceStr)) return 'Price can have at most 7 digits and 2 decimals';
+      if (Number(priceStr) <= 0) return 'Price must be greater than 0';
+      return null;
+    }
+
+    async function createOrder() {
+      const name = $('customerName').value.trim();
+      const product = $('productName').value.trim();
+      const qtyStr = $('quantity').value.trim();
+      const priceStr = $('price').value.trim();
+      const problem = validateForm(name, product, qtyStr, priceStr);
+      if (problem) {
+        showToast(problem, true);
+        return false;
+      }
+      const order = { customerName: name, productName: product, quantity: parseInt(qtyStr, 10), price: parseFloat(priceStr) };
       try {
         const res = await fetch('/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(order)
         });
-        if (!res.ok) throw new Error();
+        if (!res.ok) {
+          showToast(await readError(res, 'Failed to create order'), true);
+          return false;
+        }
         const saved = await res.json();
-        showMessage('Order #' + saved.id + ' created', false);
-        ['customerName', 'productName', 'quantity', 'price'].forEach(id => document.getElementById(id).value = '');
+        showToast('Order #' + saved.id + ' created', false);
+        ['customerName', 'productName', 'quantity', 'price'].forEach(id => { $(id).value = ''; });
         loadOrders();
+        return true;
       } catch (e) {
-        showMessage('Failed to create order', true);
+        showToast('Failed to create order', true);
+        return false;
       }
     }
 
-    // NAYA: Enter key support
-    const fieldIds = ['customerName', 'productName', 'quantity', 'price'];
-    fieldIds.forEach((id, i) => {
-      document.getElementById(id).addEventListener('keydown', (e) => {
-        if (e.key !== 'Enter') return;
-        e.preventDefault();
-        if (i < fieldIds.length - 1) {
-          document.getElementById(fieldIds[i + 1]).focus();
-        } else {
-          createOrder();
-          document.getElementById('customerName').focus();
-        }
-      });
+    $('quantity').addEventListener('input', (e) => {
+      const cleaned = e.target.value.replace(/\D/g, '').slice(0, 4);
+      if (cleaned !== e.target.value) e.target.value = cleaned;
     });
+
+    $('price').addEventListener('input', (e) => {
+      const raw = e.target.value.replace(/[^0-9.]/g, '');
+      const parts = raw.split('.');
+      const intPart = parts[0].slice(0, 7);
+      const cleaned = parts.length > 1 ? intPart + '.' + parts.slice(1).join('').slice(0, 2) : intPart;
+      if (cleaned !== e.target.value) e.target.value = cleaned;
+    });
+
+    /* ---------- Keyboard navigation (one central handler) ----------
+       Left/Right: profile, theme, Customer, Product, Quantity, Price, Create, Search, Status, Refresh,
+       then every Ship/Delete button of the table, row by row.
+       Up/Down: move to the nearest focusable control visually above/below; table actions move row-by-row.
+       In text boxes Left/Right move focus only when the cursor is at the start or end. */
+
+    const NAV_STATIC = ['profileBtn', 'themeBtn', 'customerName', 'productName', 'quantity', 'price',
+      'createBtn', 'search', 'statusFilter', 'refreshBtn', 'selectAll'];
+
+    function navElements() {
+      const list = NAV_STATIC.map(id => $(id)).filter(el => el && !el.disabled && el.offsetParent !== null);
+      document.querySelectorAll('#ordersBody button, #ordersBody input[type="checkbox"]').forEach(b => list.push(b));
+      return list;
+    }
+
+    function isTextInput(el) {
+      return el.tagName === 'INPUT' && el.type === 'text';
+    }
+
+    function caretAt(el, where) {
+      if (el.selectionStart === null || el.selectionEnd === null) return true;
+      if (el.selectionStart !== el.selectionEnd) return false;
+      return where === 'start' ? el.selectionStart === 0 : el.selectionStart === el.value.length;
+    }
+
+    function focusEl(el, caret) {
+      el.focus();
+      if (isTextInput(el)) {
+        const pos = caret === 'start' ? 0 : el.value.length;
+        try { el.setSelectionRange(pos, pos); } catch (e) { /* ignore */ }
+      }
+    }
+
+    window.__omsStatusSelectOpen = false;
+    $('statusFilter').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') window.__omsStatusSelectOpen = true;
+      if (e.key === 'Escape') window.__omsStatusSelectOpen = false;
+    });
+    $('statusFilter').addEventListener('change', () => { window.__omsStatusSelectOpen = false; });
+    $('statusFilter').addEventListener('blur', () => { window.__omsStatusSelectOpen = false; });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.isComposing) return;
+      if ($('adminDialog').open) return;
+      const el = document.activeElement;
+      const list = navElements();
+      const idx = list.indexOf(el);
+      if (idx === -1) return;
+
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        const forward = e.key === 'ArrowRight';
+        if (isTextInput(el) && !caretAt(el, forward ? 'end' : 'start')) return;
+        e.preventDefault();
+        const next = list[idx + (forward ? 1 : -1)];
+        if (next) focusEl(next, forward ? 'start' : 'end');
+        return;
+      }
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        const down = e.key === 'ArrowDown';
+
+        // Explicitly pair the Create button with Refresh above/below it in the layout.
+        if (el.id === 'createBtn' && down) {
+          e.preventDefault();
+          $('refreshBtn').focus();
+          return;
+        }
+        if (el.id === 'refreshBtn' && !down) {
+          e.preventDefault();
+          $('createBtn').focus();
+          return;
+        }
+
+        // Native select owns arrow keys while the status menu is open so options remain selectable.
+        if (el.tagName === 'SELECT') {
+          if (window.__omsStatusSelectOpen) return;
+          // When the native select is closed, allow vertical navigation to the nearest control.
+        }
+
+        // Keep order-table keyboard navigation predictable: same action in adjacent rows.
+        if (el.closest('#ordersBody')) {
+          e.preventDefault();
+          const tr = el.closest('tr');
+          const sibling = down ? tr.nextElementSibling : tr.previousElementSibling;
+          if (!sibling) {
+            if (!down) $('refreshBtn').focus();
+            return;
+          }
+          const target = sibling.querySelector('[data-kind="' + (el.dataset.kind || '') + '"]') || sibling.querySelector('button, input[type="checkbox"]');
+          if (target) target.focus();
+          return;
+        }
+
+        // Select the closest focusable control in the requested vertical direction,
+        // preferring controls in the same horizontal column. This gives Create -> Refresh
+        // and Refresh -> Create, and maps each form field to the control beneath it.
+        const currentRect = el.getBoundingClientRect();
+        const currentCenterX = currentRect.left + currentRect.width / 2;
+        const currentCenterY = currentRect.top + currentRect.height / 2;
+        const candidates = list.filter(candidate => {
+          if (candidate === el || candidate.tagName === 'SELECT' && window.__omsStatusSelectOpen) return false;
+          const r = candidate.getBoundingClientRect();
+          const cy = r.top + r.height / 2;
+          return down ? cy > currentCenterY + 4 : cy < currentCenterY - 4;
+        });
+        if (candidates.length) {
+          candidates.sort((a, b) => {
+            const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+            const ax = ra.left + ra.width / 2, bx = rb.left + rb.width / 2;
+            const ay = ra.top + ra.height / 2, by = rb.top + rb.height / 2;
+            const scoreA = Math.abs(ax - currentCenterX) * 1.35 + Math.abs(ay - currentCenterY) * 0.45;
+            const scoreB = Math.abs(bx - currentCenterX) * 1.35 + Math.abs(by - currentCenterY) * 0.45;
+            return scoreA - scoreB;
+          });
+          e.preventDefault();
+          focusEl(candidates[0], down ? 'start' : 'end');
+        }
+        return;
+      }
+
+      if (e.key === 'Enter') {
+        // Let the browser open native select dropdowns with Enter.
+        if (el.tagName === 'SELECT') return;
+        if (isTextInput(el)) {
+          e.preventDefault();
+          if (el.id === 'price') {
+            createOrder().then(ok => { if (ok) focusEl($('customerName'), 'end'); });
+          } else if (list[idx + 1]) {
+            focusEl(list[idx + 1], 'end');
+          }
+        }
+      }
+    });
+
+    /* ---------- Start ---------- */
+
+    let savedTheme = null;
+    try { savedTheme = localStorage.getItem('theme'); } catch (e) { /* ignore */ }
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+    updateAdminUi();
+    restoreAdminSession();
 
     loadOrders();
     setInterval(loadOrders, 3000);

@@ -6,18 +6,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrderEventConsumer {
 
-    private final OrderRepository repository;
+    private final OrderService service;
 
-    public OrderEventConsumer(OrderRepository repository) {
-        this.repository = repository;
+    public OrderEventConsumer(OrderService service) {
+        this.service = service;
     }
 
     @KafkaListener(topics = KafkaTopicConfig.ORDER_CREATED_TOPIC)
     public void handleOrderCreated(String orderId) throws InterruptedException {
         Thread.sleep(3000); // processing ka simulation
-        repository.findById(Long.parseLong(orderId)).ifPresent(order -> {
-            order.setStatus(OrderStatus.CONFIRMED);
-            repository.save(order);
-        });
+        Long id;
+        try {
+            id = Long.parseLong(orderId.trim());
+        } catch (NumberFormatException e) {
+            return;
+        }
+        service.confirm(id);
     }
 }
