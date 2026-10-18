@@ -36,3 +36,4 @@ build/
 .env
 .env.*
 !.env.example
+docker-compose.local.yml
