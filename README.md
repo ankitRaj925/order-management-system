@@ -567,9 +567,7 @@ Keep database, Kafka, Prometheus, and Grafana ports restricted. Do not publish c
 - 🗃️ Add database migrations and automated backups with tested restore procedures.
 - 📨 Improve Kafka retry, dead-letter, and idempotency handling as needed.
 
-## 📄 License
 
-No license has been specified in this README. Add a `LICENSE` file and update this section if you choose to publish the project under an open-source license.
 
 ## 👤 Author
 
