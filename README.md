@@ -567,6 +567,7 @@ Keep database, Kafka, Prometheus, and Grafana ports restricted. Do not publish c
 - 🗃️ Add database migrations and automated backups with tested restore procedures.
 - 📨 Improve Kafka retry, dead-letter, and idempotency handling as needed.
 
+## 📄 License
 
 
 ## 👤 Author
@@ -575,4 +576,4 @@ Keep database, Kafka, Prometheus, and Grafana ports restricted. Do not publish c
 
 ---
 
-<p align="center">Built to learn, implement, and operate a complete order-processing application—from API design to deployment and observability.</p>
+<p align="center">**Built and deployed an event-driven Order Management System.**.</p>
