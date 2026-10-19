@@ -569,6 +569,7 @@ Keep database, Kafka, Prometheus, and Grafana ports restricted. Do not publish c
 
 ## 📄 License
 
+This project is licensed under the [MIT License](LICENSE).
 
 ## 👤 Author
 
