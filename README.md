@@ -1,13 +1,23 @@
 # 📦 Order Management System (OMS)
 
 [![CI](https://github.com/ankitRaj925/order-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/ankitRaj925/order-management-system/actions/workflows/ci.yml)
+![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-3.9-231F20?logo=apachekafka&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?logo=githubactions&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-EC2-FF9900?logo=amazonaws&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C?logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-Dashboards-F46800?logo=grafana&logoColor=white)
 
-> **An event-driven order management application built to demonstrate backend engineering and end-to-end delivery:** Spring Boot REST APIs, PostgreSQL persistence, asynchronous Kafka events, session-based admin security, Docker Compose, GitHub Actions, AWS EC2, Prometheus, and Grafana.
+> *“From order creation to confirmation — powered by event-driven architecture.”*
 
-Orders are created through a web dashboard or REST API, saved with the `CREATED` status, confirmed asynchronously by a Kafka consumer, and shipped by an authenticated administrator. The dashboard provides order search, status filtering, summary statistics, and automatic refresh.
+**An event-driven Order Management System built with Spring Boot, PostgreSQL, and Apache Kafka.** It supports order creation through a web dashboard or REST API, asynchronous order confirmation, authenticated admin operations, Docker Compose, automated CI/CD, AWS EC2 deployment, and Prometheus/Grafana monitoring.
 
-🌐 **Live Demo:** [Open Order Management System](http://54.252.24.231:8080) · *Temporary EC2 link; it may be unavailable when the instance is stopped, and the public IP may change.*
+🌐 **Live Demo:** [Open Order Management System](http://54.252.24.231:8080/) · *Temporary EC2 link; it may be unavailable when the instance is stopped, and the public IP may change.*
 
+---
 ---
 
 ## 🧭 Table of Contents
@@ -31,66 +41,84 @@ Orders are created through a web dashboard or REST API, saved with the `CREATED`
 
 ### 📦 Order management
 
-- Create and retrieve orders through REST endpoints or the web dashboard.
-- Validate order data on the server.
-- Persist prices using Java `BigDecimal` and PostgreSQL `NUMERIC(9,2)`.
-- Confirm new orders asynchronously through Kafka.
-- Enforce the implemented lifecycle: `CREATED` → `CONFIRMED` → `SHIPPED`.
-- Return a conflict response for invalid status transitions.
+- Create and retrieve orders via REST API or web dashboard.
+- Server-side validation and precise price handling with `BigDecimal` and PostgreSQL `NUMERIC(9,2)`.
+- Asynchronous Kafka-based order confirmation.
+- Enforced lifecycle: `CREATED` → `CONFIRMED` → `SHIPPED`, with invalid transitions rejected..
 
 ### 🔐 Admin operations
 
-- Admin login using a username, password, and server-side session.
-- CSRF protection for state-changing admin requests.
-- Ship or delete an individual order.
-- Bulk ship and bulk delete operations with per-order results.
+- Session-based admin authentication with CSRF protection.
+- Ship or delete individual orders, with bulk operations and per-order results.
 
 ### 🖥️ Web dashboard
 
-- Order statistics, status counts, total order value, and fulfilment progress.
+- Order statistics, status counts, total value, and fulfilment progress.
 - Search by order ID, customer, or product; filter by status.
-- Light and dark themes with a saved preference.
-- Responsive layout and keyboard navigation.
-- Automatic refresh every three seconds, highlighting new or changed rows.
+- Responsive light/dark themes, keyboard navigation, and automatic refresh every 3 seconds.
 
 ### ⚙️ Platform and operations
 
-- Docker Compose setup for the application and supporting services.
-- GitHub Actions workflows for CI, image publishing, and deployment.
-- Container image publishing to GitHub Container Registry (GHCR).
-- AWS EC2 deployment through a self-hosted GitHub Actions runner.
+- Docker Compose for the application and supporting services.
+- GitHub Actions CI/CD with GHCR image publishing and AWS EC2 deployment via a self-hosted runner.
 - Prometheus metrics and Grafana dashboards.
-- Kubernetes manifests provided as reference configuration; these have not been validated on a live cluster.
+- Kubernetes reference manifests (not validated on a live cluster)
 
 ## 🖼️ Screenshots
 
-The screenshots below are from the running project. Store them in `docs/images/` using the filenames shown here. Keep the README focused on the most useful views; the remaining screenshots can stay in the folder without all being displayed.
+### 1. Application Dashboard — Dark Mode
 
-### 🖥️ Order management dashboard
+![Order Management System dashboard in dark mode](docs/images/OMS%201.png)
 
-![Order management dashboard](docs/images/order-dashboard.png)
+### 2. Admin Login and Logout
 
-### 🌗 Dark theme dashboard
+<table>
+  <tr>
+    <th align="center">Admin Login</th>
+    <th align="center">Admin Logout</th>
+  </tr>
+  <tr>
+    <td><img src="docs/images/Oms%20Admin%20Login.png" alt="Admin login" width="100%"></td>
+    <td><img src="docs/images/OMS%20Admin%20Logout.png" alt="Admin logout" width="100%"></td>
+  </tr>
+</table>
 
-![Order management dashboard in dark theme](docs/images/order-dashboard-dark.png)
+### 3. Grafana — Full Order Service Dashboard
 
-### 🔐 Admin login
+![Grafana dashboard with Request Rate, Order Service Status, Total HTTP Requests and JVM Memory Used](docs/images/OMS%20Dashboard%20Grafana%205.png)
 
-![Admin login screen](docs/images/admin-login.png)
+<details>
+<summary><strong>More screenshots</strong></summary>
 
-### 🐳 Docker Compose services
+#### Application Dashboard — Light Mode
 
-![Docker Compose services](docs/images/docker-services.png)
+![Order Management System dashboard in light mode](docs/images/OMS%202.png)
 
-### 📊 Grafana monitoring dashboard
+#### Grafana — Request Rate
 
-![Grafana monitoring dashboard](docs/images/grafana-dashboard.png)
+![Grafana Request Rate panel](docs/images/OMS%20Dashboard%20Grafana%201.png)
 
-### 🎯 Prometheus targets
+#### Grafana — Order Service Status
 
-![Prometheus targets](docs/images/prometheus-targets.png)
+![Grafana Order Service Status panel](docs/images/OMS%20Dashboards%20Grafana%202.png)
 
-> The test-results and GitHub Actions screenshots are not present in the folder screenshot you shared. Add them later only if you capture those screens; they are not required for the README to be complete.
+#### Grafana — Total HTTP Requests
+
+![Grafana Total HTTP Requests panel](docs/images/OMS%20Dashoard%20Grafana%203.png)
+
+#### Grafana — JVM Memory Used
+
+![Grafana JVM Memory Used panel](docs/images/OMS%20Dashboard%20Grafana%204.png)
+
+#### Prometheus Targets
+
+![Prometheus targets](docs/images/Prometheus%201.png)
+
+#### Docker Compose Services
+
+![Docker Compose services](docs/images/Docker%201.png)
+
+</details>
 
 ## 🏗️ Architecture
 
